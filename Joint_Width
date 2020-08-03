@@ -1,0 +1,113 @@
+import csv
+
+with open('joint_width_python.csv') as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            print(f'Column names are {", ".join(row)}')
+            line_count += 1
+        else:
+            file_name = row[0]
+            tool_diameter = float(row[1])
+            step_over = float(row[2])
+            xmin = int(row[3])
+            xWidth = int(row[4])
+            ymin = int(row[5])
+            ymax = int(row[6])
+            feed_rate = int(row[7])
+            ymargin = int(row[8])
+			
+            print(f'Values are: {file_name} {tool_diameter} {step_over} {xmin} {xWidth} {ymin} {ymax} {feed_rate}')
+            line_count += 1
+    print(f'Processed {line_count} lines.')
+    
+#begin gcode file
+create_new_file = (file_name + '.tap')
+file = open(create_new_file,'w')
+
+file.write('(')
+file.write(file_name) 
+file.write(')')
+file.write('\r')
+
+file.write('(Zero machine to work, run from 0,0)')
+file.write('\r')
+
+file.write('G90 G94 G91.1 G40 G49 G17') 
+file.write('\r')
+
+file.write('G20') 
+file.write('\r')
+
+file.write('(VERIFY TOOL DIAMETER: ') 
+file.write(str(tool_diameter))
+file.write(' inches and stepping over ')
+file.write(str(step_over))
+file.write(')')
+file.write('\r')
+file.write('(xWidth: ')
+file.write(str(xWidth))
+file.write('; Ymax: ')
+file.write(str(ymax))
+file.write(')')
+file.write('\r')
+
+
+file.write('G54')
+file.write('\r')
+file.write('\r')
+
+file.write('G1 X0 Y0 F')
+file.write(str(feed_rate))
+file.write('\r')
+
+file.write('G1 Z0 F')
+file.write(str(feed_rate))
+file.write('\r')
+file.write('\r')
+
+
+
+#create variables to hold x and y positions
+posy = 0
+posx = 0
+
+#do this until posx = xWidth, and then execute one more y move
+
+
+xindex = 0.0
+yindex = 0
+counter = 0
+print(type(xindex))
+print(type(xWidth))
+print(type(step_over))
+
+#move to ymax
+file.write('G1 Y')
+file.write(str(ymax + ymargin))
+file.write(' F')
+file.write(str(feed_rate))
+file.write('\r')
+
+#move to xwidth values
+file.write('G1 X')
+file.write(str((xWidth + tool_diameter)))
+file.write (' F')
+file.write(str(feed_rate))
+file.write('\r')
+
+#move back to ymin(0)
+file.write('G1 Y')
+file.write(str(ymin))
+file.write(' F')
+file.write(str(feed_rate))
+file.write('\r')
+
+
+file.write('\r')
+file.write('G1 Z1 F')
+file.write(str(feed_rate))
+file.write('\r')
+
+file.close() 
